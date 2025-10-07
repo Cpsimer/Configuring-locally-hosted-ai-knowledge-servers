@@ -1,0 +1,28 @@
+{
+  "name": "AI Knowledge Server",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "yzhang.markdown-all-in-one",
+        "DavidAnson.vscode-markdownlint"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "files.autoSave": "afterDelay",
+        "markdown.preview.fontSize": 14
+      }
+    }
+  },
+
+  "postCreateCommand": "echo 'AI Knowledge Server Ready! Add your markdown files to the knowledge/ directory.'",
+
+  "remoteUser": "codespace"
+}
