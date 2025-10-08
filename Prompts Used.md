@@ -1,0 +1,4 @@
+
+| Input                                                                                              | Use Case                                                                          | Context                              | Output                                   |
+| -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------ | ---------------------------------------- |
+| a prompt that will provide an updated and finalized plan as discussed in the conversation uploaded | Setting up Xps 13 and AI desktop workstation to work together for the with docker | github configuring locally hosted ai | [[Expert computing environment advice]]  |
