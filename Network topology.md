@@ -78,19 +78,19 @@ network:
       to_port: wan1
       cable_type: cat5e
 
-    # Edge router to uc_ap_pri node to provide Wi‑Fi backhaul
+    # Edge router to uc_ap_pro node to provide Wi‑Fi backhaul
     - from_device: edge_router
       from_port: eth3
       to_device: uc_ap_pro
       to_port: wan
-      cable_type: cat5e
+      cable_type: cat6 plus
 
     # Edge router to UniFi Express 7 – Express 7’s WAN connection
     - from_device: edge_router
       from_port: eth0
       to_device: express7
       to_port: wan
-      cable_type: cat6_plus STP
+      cable_type: cat6 plus STP
 
     # UniFi Express 7 (LAN) uplink to the Flex Mini switch
     - from_device: express7
@@ -142,10 +142,5 @@ network:
       to_port: ethernet
       cable_type: cat5e
 
-    # USG LAN2 to the Unifi Cloud Key (as shown in the drawing)
-    - from_device: usg
-      from_port: lan2
-      to_device: cloud_key
-      to_port: ethernet
-      cable_type: cat5e
+    # 
 

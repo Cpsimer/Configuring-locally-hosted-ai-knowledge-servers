@@ -26,3 +26,8 @@ Processor: Intel64 Family 6 Model 158 Stepping 13 GenuineIntel - 2400MHz
 Total Physical Memory: 65,263 MB (64 GB)
 Virtual Memory: Max: 69,359 MB, Available: 58,678 MB
 Product ID: 003305289713786AAOEM
+
+Jetson Orin Nano Super Developer kit
+
+Nvme: 1tb Samsung 990 evo pro
+Micro sd: 32gb 
