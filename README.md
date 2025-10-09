@@ -14,11 +14,6 @@ This repository contains the complete strategic roadmap and implementation files
 
 ## Quick Navigation
 
-### 🚀 Getting Started
-
-1. **[Strategic Roadmap](./Strategic-Roadmap.md)** - Comprehensive strategy and architecture (READ THIS FIRST)
-2. **[Quick Start Guide](./QUICK_START.md)** - Step-by-step deployment instructions
-3. **[Implementation Checklist](./IMPLEMENTATION_CHECKLIST.md)** - Week-by-week task tracking
 
 ### 📋 Planning Documents
 
@@ -32,52 +27,24 @@ This repository contains the complete strategic roadmap and implementation files
 - **[Personal Hardware Specs](./personal%20hardware%20specs.md)** - Hardware inventory
 - **[Software Configuration](./Software%20and%20Firmware%20Configuration.md)** - Installed software versions
 
-### 🐳 Docker Stack Files
 
-- **[docker-swarm-stack.yml](./docker-swarm-stack.yml)** - Complete service definitions
-- **[prometheus.yml](./prometheus.yml)** - Monitoring configuration
 
-### 🤖 Application Code
-
-- **[T-Rex API](./trex_api/trex_api.py)** - Taxonomy classification service
-- **[Preprocessing Script](./preprocessing_scripts/preprocess.py)** - Data pipeline
-
-## Document Relationships
-
-```
-Strategic-Roadmap.md (Master Document)
-│
-├── QUICK_START.md (Deployment)
-│   └── docker-swarm-stack.yml
-│       ├── prometheus.yml
-│       ├── trex_api.py
-│       └── preprocess.py
-│
-├── IMPLEMENTATION_CHECKLIST.md (Tracking)
-│
-└── Planning Documents (Context)
-    ├── End Goal for Application.md
-    ├── MoSCoW prioritization.md
-    ├── Network topology.md
-    ├── Personal hardware specs.md
-    └── Software Configuration.md
-```
 
 ## Key Features
 
-### System Architecture (Strategic-Roadmap.md § 1)
+### System Architecture ()
 
 - **Bottleneck Analysis:** Network optimization for 2.5G topology
 - **Docker Swarm Strategy:** GPU/CPU workload distribution
 - **GPUDirect Storage:** NVMe-to-VRAM optimization path
 
-### AI Workflow (Strategic-Roadmap.md § 2)
+### AI Workflow ()
 
 - **End-to-End Pipeline:** Data ingestion → Training → Optimization → Deployment
 - **TensorRT Tuning:** FP8/FP16 precision modes, paged KV cache
-- **Performance Targets:** <50ms inference latency, >80% GPU utilization
+- **Performance Targets:** <50ms inference latency, >85% GPU utilization
 
-### Knowledge Management (Strategic-Roadmap.md § 3)
+### Knowledge Management ()
 
 - **T-Rex Model:** BERT-based taxonomy classifier for Obsidian
 - **n8n Automation:** Git commits → Obsidian notes with AI tagging
@@ -85,20 +52,20 @@ Strategic-Roadmap.md (Master Document)
 
 ### Scalability (Strategic-Roadmap.md § 4)
 
-- **Current:** 2-node Swarm (Desktop + XPS 15)
+- **Current:** 4-node Swarm (Desktop + XPS 15 + jetson nano super + xps 13)
 - **Phase 2:** Add GPU node or specialized workers
 - **Phase 3:** Edge deployment with XPS 13
 - **Phase 4:** Hybrid cloud for burst compute
 
 ## Implementation Timeline
 
-| Phase | Duration | Key Deliverables |
+|Phase | Duration | Key Deliverables |
 |-------|----------|------------------|
-| **Week 1** | Foundation | Swarm cluster, core services deployed |
-| **Week 2** | AI Pipeline | Training workflow, TensorRT optimization |
-| **Week 3** | Automation | T-Rex model, n8n workflows active |
-| **Week 4** | Optimization | Performance tuning, documentation |
-| **Month 2** | Advanced | PyTorch Geometric, load testing |
+|  | Foundation | Swarm cluster, core services deployed |
+|  | AI Pipeline | Training workflow, TensorRT optimization |
+| ** | Automation | T-Rex model, n8n workflows active |
+|  | Optimization | Performance tuning, documentation |
+| | Advanced | PyTorch Geometric, load testing |
 
 ## Service Inventory
 
@@ -132,50 +99,33 @@ Strategic-Roadmap.md (Master Document)
 ## Critical Success Factors
 
 1. ✅ **Desktop GPU exclusively for inference/training** (placement constraints)
-2. ✅ **XPS 15 hardwired to switch** (eliminate Wi-Fi bottleneck)
-3. ✅ **NAS accessible from both nodes** (unified storage)
+3. ✅ **NAS accessible from  nodes** (unified storage)
 4. ✅ **Obsidian vault on shared NFS** (n8n automation target)
 5. ✅ **T-Rex model <50ms latency** (real-time classification)
-6. ✅ **Automated Git → Obsidian pipeline** (knowledge capture)
+6. ✅ **Automated Git or n8n → Obsidian pipeline** (knowledge capture)
 
 ## Security Considerations
 
-- **NGC API Keys:** Stored as Docker secrets
-- **Database Credentials:** Environment variables + secrets
-- **Network Isolation:** Separate overlay networks for GPU/CPU
-- **NAS Access:** NFS with IP-based ACLs
+- **NGC API Keys:** Stored as Docker secrets using pass
+- **Database Credentials:** Environment variables + secrets 
+- **Network Isolation:** accelerate computing and security
+- **NAS Access:** SSL
 - **Local-First:** No cloud dependencies, full data sovereignty
 
-## Troubleshooting Quick Reference
-
-| Issue | Solution | Reference |
-|-------|----------|-----------|
-| Service won't start | Check placement constraints | QUICK_START.md § Troubleshooting |
-| GPU not accessible | Verify nvidia-container-toolkit | QUICK_START.md § GPU Access |
-| Network slow | Test with iperf3, check MTU | Strategic-Roadmap.md § 1.1 |
-| NAS mount fails | Check NFS exports, firewall | QUICK_START.md § Step 4 |
-| Out of VRAM | Reduce batch size, use FP8 | Strategic-Roadmap.md § 2.2 |
-
-## Maintenance Schedule
-
-- **Daily:** Automated backups (2 AM)
-- **Weekly:** Review Grafana alerts, check logs
-- **Monthly:** Update Docker images, test recovery
-- **Quarterly:** Architecture review, capacity planning
 
 ## Technology Stack
 
 ### NVIDIA Software
 - NIM Microservices (inference)
-- NeMo Framework 24.12 (training)
-- TensorRT 24.12 (optimization)
+- NeMo Framework  (training)
+- TensorRT  (optimization)
 - Triton Inference Server (serving)
 - DCGM Exporter (monitoring)
 
 ### Infrastructure
 - Docker Engine + Swarm
 - Ubuntu 25.10 (Desktop), Ubuntu (XPS 15)
-- CUDA 13.0.1, Driver 580.95.05
+- CUDA 13.0.2, Driver 580.95.05
 - UniFi networking (2.5G)
 
 ### Data & ML
@@ -248,24 +198,4 @@ This is a personal infrastructure project, but lessons learned are documented fo
 
 ## License
 
-Personal infrastructure configuration. Code samples provided as-is for educational purposes.
-
-## Changelog
-
-### 2025-10-07 - Initial Release
-- Complete strategic roadmap
-- Docker Swarm stack definitions
-- T-Rex classifier implementation
-- Preprocessing pipeline
-- Quick start guide
-- Implementation checklist
-
----
-
-**Next Steps:**
-1. Review [Strategic-Roadmap.md](./Strategic-Roadmap.md) for complete architecture
-2. Follow [QUICK_START.md](./QUICK_START.md) for deployment
-3. Track progress with [IMPLEMENTATION_CHECKLIST.md](./IMPLEMENTATION_CHECKLIST.md)
-4. Customize configurations for your environment
-
-**Questions?** Review the Strategic Roadmap § 7 (Learning Resources) for additional support channels.
+Personal infrastructure configuration. 
