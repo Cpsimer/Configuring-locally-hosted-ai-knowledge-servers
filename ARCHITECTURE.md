@@ -18,13 +18,17 @@
               │                  │                  │
        [UniFi Express 7]   [AC Pro WiFi]    [USG Gateway]
               │                  │                  │
-       [Flex Mini 2.5G]          │            [WD NAS]
-              │                  │            (Storage)
-     ┌────────┼────────┐         │
-     │        │        │         │
-  [XPS13] [Desktop] [USB-C]   [XPS15]
-  Portable  Primary  Adapter  CPU Node
-  Client   GPU Node          (Wi-Fi)
+       [Flex Mini 2.5G]          │            [Honey pot]
+              │                  │            (attack network)
+        [lab network]            |
+              |      [guest network,personal network, iot]
+     ┌────────┼───────┐──────┐   
+     │        │       │      |   
+  [XPS13] [Desktop] [xps15] [Usg gateway 2]
+Portable  Primary  stationary   |
+  Client   GPU Node  Workhorse  |
+     |                          |
+     |____________________[WD 2tb Nas]
 ```
 
 ## Docker Swarm Cluster Topology
@@ -196,7 +200,7 @@
 
 Desktop NVMe (Tier 1 - Fastest)
 ┌────────────────────────────────────────┐
-│ Samsung 990 PRO 2TB Gen5               │
+│ Samsung 9100 PRO 2TB Gen5               │
 │ Read: 15 GB/s, Write: 13 GB/s         │
 │ ────────────────────────────────────── │
 │ • Active model cache                   │
@@ -210,231 +214,36 @@ Desktop NVMe (Tier 1 - Fastest)
           ↕ Hot data promotion
           ↓ 2.5G Network
 
-NAS Storage (Tier 2 - Shared)
+xps13,xps15,jetson nano super NVMe (Tier 2 - fast and easily accessible)
+┌────────────────────────────────────────┐
+│ Samsung 990 evo PRO 1TB Gen5           |
+| inside jetson nano super               |
+│ Read: 7 GB/s, Write: 6 GB/s            │
+│ ────────────────────────────────────── │
+│ • Active model cache                   │
+│ • TensorRT engines                     │
+│ • Training checkpoints                 │
+│ • OS and applications                  │
+│                                        │
+│ GPUDirect Storage → VRAM               │
+│ (Bypasses CPU/DDR5)                    │
+└────────────────────────────────────────┘
+          ↕ Hot data promotion
+          ↓ desktop with 10 GB/s usb c data cable
+
+NAS Storage (Tier 3 - Shared)
 ┌────────────────────────────────────────┐
 │ WD NAS (Connected via USG)             │
-│ Transfer: ~280 MB/s over 2.5G          │
+│ Transfer: ~280 MB/s over 1g            │
 │ ────────────────────────────────────── │
-│ /models/                               │
-│ • Base models (LLAMA, BERT)            │
-│ • Model variants                       │
-│ • ONNX exports                         │
-│                                        │
-│ /data/                                 │
-│ • Raw datasets                         │
-│ • Processed datasets                   │
-│ • Batch inference inputs               │
-│                                        │
-│ /obsidian/                             │
-│ • Markdown notes                       │
-│ • Attachments                          │
-│ • Templates                            │
-│                                        │
-│ NFS v4.2 mounts on both nodes          │
+│ use for local repository/ arcives      |
 └────────────────────────────────────────┘
           ↕ Backup
           ↓
 
-External Backup (Tier 3 - Archive)
-┌────────────────────────────────────────┐
-│ External USB Drive                     │
-│ ────────────────────────────────────── │
-│ • Daily snapshots (7 days)             │
-│ • Weekly backups (4 weeks)             │
-│ • Monthly archives (12 months)         │
-│                                        │
-│ 3-2-1 Backup Strategy                  │
-└────────────────────────────────────────┘
-```
-
-## Network Data Paths
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                       NETWORK OPTIMIZATION                           │
-└─────────────────────────────────────────────────────────────────────┘
-
-Critical Path (Training):
-┌─────────────┐
-│ NAS Storage │
-│ (Dataset)   │
-└──────┬──────┘
-       │ 2.5G Network
-       │ ~280 MB/s
-       ↓
-┌─────────────────┐
-│ Desktop         │
-│ DDR5 RAM Cache  │ ←── 128GB buffer
-│ (Hot dataset)   │     51,200 MB/s
-└────────┬────────┘
-         │ PCIe Gen5
-         │ 15,000 MB/s (NVMe)
-         ↓
-┌─────────────────┐
-│ Samsung 990 PRO │
-│ (Staged models) │
-└────────┬────────┘
-         │ GPUDirect Storage
-         │ (Future: Direct path)
-         ↓
-┌─────────────────┐
-│ RTX 5070 Ti     │
-│ VRAM (16GB)     │ ←── Model weights
-└─────────────────┘     896 GB/s bandwidth
 
 
-Critical Path (Inference):
-┌──────────────────┐
-│ User Request     │ (HTTP/REST)
-└────────┬─────────┘
-         │ <2ms latency
-         ↓
-┌──────────────────┐
-│ Redis Cache      │ (Prompt cache hit?)
-│ (Desktop)        │
-└────────┬─────────┘
-         │ Cache miss
-         ↓
-┌──────────────────┐
-│ NIM Inference    │ (GPU processing)
-│ (Desktop)        │
-└────────┬─────────┘
-         │ <50ms
-         ↓
-┌──────────────────┐
-│ Response         │ (Streamed tokens)
-└──────────────────┘
 
-
-Automation Path (Git → Obsidian):
-┌──────────────────┐
-│ GitHub Webhook   │ (Push event)
-└────────┬─────────┘
-         │ Internet
-         ↓
-┌──────────────────┐
-│ n8n Workflow     │ (XPS 15)
-│ (Receives)       │
-└────────┬─────────┘
-         │ Parse commit data
-         ↓
-┌──────────────────┐
-│ T-Rex API        │ (Desktop GPU)
-│ Classification   │
-└────────┬─────────┘
-         │ <50ms
-         ↓
-┌──────────────────┐
-│ Generate Note    │ (n8n - XPS 15)
-│ (Markdown)       │
-└────────┬─────────┘
-         │ 2.5G Network
-         ↓
-┌──────────────────┐
-│ Obsidian Vault   │ (NAS Storage)
-│ (Saved)          │
-└──────────────────┘
-Total: <30 seconds end-to-end
-```
-
-## Monitoring & Observability
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                      MONITORING ARCHITECTURE                         │
-└─────────────────────────────────────────────────────────────────────┘
-
-┌──────────────────────────────────────────────────────────────────────┐
-│                           Grafana (XPS 15)                           │
-│                         Visualization Layer                          │
-│                            Port 3000                                 │
-└────────────────────────────────┬─────────────────────────────────────┘
-                                 │ Queries
-                                 ↓
-┌──────────────────────────────────────────────────────────────────────┐
-│                        Prometheus (XPS 15)                           │
-│                         Metrics Aggregation                          │
-│                            Port 9090                                 │
-└──────────────┬───────────────────────────────────────┬───────────────┘
-               │ Scrapes (15s interval)                │
-               ↓                                       ↓
-    ┌──────────────────────┐              ┌──────────────────────┐
-    │ Desktop Metrics      │              │ XPS 15 Metrics       │
-    ├──────────────────────┤              ├──────────────────────┤
-    │ • DCGM Exporter      │              │ • Node Exporter      │
-    │   (GPU metrics)      │              │   (CPU, RAM, disk)   │
-    │ • Node Exporter      │              │ • cAdvisor           │
-    │   (System metrics)   │              │   (Container stats)  │
-    │ • cAdvisor           │              │ • Service endpoints  │
-    │   (Container stats)  │              │   (n8n, MLflow)      │
-    │ • NIM metrics        │              │                      │
-    │ • Triton metrics     │              │                      │
-    └──────────────────────┘              └──────────────────────┘
-
-Key Metrics Tracked:
-┌────────────────────────┬──────────────────┬───────────────────┐
-│ GPU (Desktop)          │ CPU (XPS 15)     │ Network           │
-├────────────────────────┼──────────────────┼───────────────────┤
-│ • Utilization (%)      │ • Utilization    │ • Throughput      │
-│ • VRAM usage (GB)      │ • Memory usage   │ • Latency (ms)    │
-│ • Temperature (°C)     │ • Disk I/O       │ • Packet loss     │
-│ • Power draw (W)       │ • Process count  │ • Bandwidth       │
-│ • Tensor Core activity │ • Load average   │ • Connections     │
-│ • SM occupancy         │ • Context switch │                   │
-└────────────────────────┴──────────────────┴───────────────────┘
-
-Alerting Rules:
-• GPU utilization < 50% during training (underutilization)
-• VRAM usage > 90% (risk of OOM)
-• Inference latency > 100ms (performance degradation)
-• Network throughput < 1 Gbps (bottleneck)
-• Container restarts > 3 in 5 minutes (stability issue)
-```
-
-## Security Layers
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        SECURITY ARCHITECTURE                         │
-└─────────────────────────────────────────────────────────────────────┘
-
-Network Security:
-┌────────────────────────────────────────────────────────────────────┐
-│ Internet → EdgeRouter → UniFi Security Gateway (Firewall)          │
-│                                                                    │
-│ Rules:                                                             │
-│ • Block all incoming except SSH (key-based)                       │
-│ • Allow outbound for NGC registry, GitHub                         │
-│ • Internal network: 192.168.1.0/24                                │
-│ • DMZ for external services (if needed)                           │
-└────────────────────────────────────────────────────────────────────┘
-
-Docker Swarm Security:
-┌────────────────────────────────────────────────────────────────────┐
-│ • TLS encryption for swarm communication                           │
-│ • Mutual authentication between nodes                              │
-│ • Overlay network isolation (gpu_net ≠ cpu_net)                   │
-│ • Secrets management (NGC keys, DB passwords)                      │
-│ • No privileged containers (except DCGM)                           │
-└────────────────────────────────────────────────────────────────────┘
-
-Data Security:
-┌────────────────────────────────────────────────────────────────────┐
-│ • NAS: NFSv4 with IP-based ACLs                                    │
-│ • Encryption at rest (LUKS on NVMe)                                │
-│ • Backup encryption (GPG)                                          │
-│ • No data leaves local network (privacy-first)                     │
-│ • Obsidian vault: local-only, no sync services                     │
-└────────────────────────────────────────────────────────────────────┘
-
-Application Security:
-┌────────────────────────────────────────────────────────────────────┐
-│ • n8n: Basic auth, HTTPS (if exposed)                              │
-│ • Grafana: Strong password, read-only viewers                      │
-│ • PostgreSQL: Non-default port, strong password                    │
-│ • NIM API: Internal network only                                   │
-│ • Regular updates: weekly security patches                         │
-└────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Scalability Roadmap
@@ -507,10 +316,10 @@ Workload: Edge inference, cloud training, hybrid deployment
 
 **Performance Expectations:**
 - Desktop → XPS 15: 2.5 Gbps (hardwired)
-- Desktop → NAS: ~280 MB/s (via 2.5G, through USG)
+- Desktop → NAS: ~280 MB/s (via 1G, through USG)
 - NVMe → VRAM: 15 GB/s (PCIe Gen5)
 - DDR5 Bandwidth: 51.2 GB/s (dual-channel)
-- GPU Memory: 896 GB/s (GDDR6X)
+- GPU Memory: 896 GB/s (GDDR7X)
 
 **Next Steps:**
 1. Review this architecture against your actual network
