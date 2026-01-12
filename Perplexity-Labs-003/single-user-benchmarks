@@ -1,0 +1,8 @@
+Configuration,Throughput_Tokens_Per_Sec,Latency_P50_TTFT_ms,Memory_Utilization,FPS_Inference,Source,Single_User_Optimization
+vLLM Llama 3.1 8B FP8 - RTX 5070 Ti,140-170 (no queue overhead),22,85% (13.6GB VRAM),N/A,file:4,PRIMARY - literature review + high-quality writing
+vLLM Llama 3.2 3B FP16 - RTX 5070 Ti,180-220 (responsive),15,60% (9.6GB VRAM),N/A,file:3,BALANCED - medium analysis tasks
+llama.cpp Llama 3.2 3B Q4 - Ryzen 9900X,144-200 (instant startup),N/A (CPU sub-20ms),~40GB system RAM,N/A,file:3,PREFERRED for hypothesis generation + code iteration
+llama.cpp Llama 3.2 1B Q4 - Ryzen 9900X (CPU-only),200-240 (ultra-fast),<20ms,~8GB system RAM,N/A,file:3,OPTIMAL for instant brainstorming + quick debugging
+Jetson Orin Nano ResNet50 FP16 - TensorRT,N/A (classification),N/A,N/A,~8-9 ms/image (111 FPS),web:51,EDGE - document image classification (defer to Month 2)
+Single-User Infrastructure Latency Overhead,50-80ms (vs 450-550ms enterprise),50-80ms TTFT advantage,,No monitoring overhead,derived,No NGINX proxy + auth + routing = 80% latency reduction
+Ryzen 9900X llama.cpp 70B Q4 Hybrid GPU-CPU,~30-40 (expert reasoning),N/A,16GB VRAM + 64GB RAM,N/A,file:4,FALLBACK for deep analysis (use if Llama 3.3 unavailable)

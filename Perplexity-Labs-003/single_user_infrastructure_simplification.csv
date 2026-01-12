@@ -1,0 +1,9 @@
+Component,Enterprise,Single_User,Latency_Savings_ms
+Model Storage,NGC Registry + Milvus,Local /mnt/models,5
+Inference Servers,vLLM + Triton + NIM,vLLM only,300
+Authentication,Authentik OAuth2,None,0
+Networking,NGINX + TLS 1.3,None,25
+Monitoring,Prometheus + Grafana,Optional,0
+Secrets Management,Vault + rotation,None,5
+Request Routing,Intelligent routing,None,15
+CI/CD,Jenkins + Gitea,Manual restart,N/A

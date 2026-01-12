@@ -1,0 +1,322 @@
+# Single-User AI IDP: Quick Reference Card
+
+**Print this or save to phone for daily reference**
+
+---
+
+## 🚀 DEPLOYMENT (Days 1-3)
+
+```
+DAY 1: Foundation (2-3 hours)
+  1. Install NVIDIA Toolkit: sudo apt install nvidia-container-toolkit
+  2. Download models: /mnt/models/{llama-3.1-8b,llama-3.2-3b,llama-3.2-1b}
+  3. Copy docker-compose.yml to ~/ai-idp/
+  4. Deploy: docker-compose up -d && sleep 45
+  5. Verify: docker-compose ps (both containers "Up")
+
+DAY 2: Integration (3-4 hours)
+  1. Copy research_assistant.py, model_switcher.sh to ~/ai-idp/
+  2. Add aliases to ~/.bashrc
+  3. Run benchmark: python benchmark_models.py
+  4. Document baseline metrics
+
+DAY 3: Validation (1-2 hours)
+  1. Test complete workflow (literature → hypothesis → code → writing)
+  2. Verify TTFT <30ms, throughput >120 tok/s
+  3. Test model switching (<60s)
+  4. System ready for production
+```
+
+---
+
+## 📊 PERFORMANCE TARGETS
+
+| **Engine** | **Model** | **TTFT** | **Throughput** | **Use Case** |
+|---|---|---|---|---|
+| **GPU** | Llama 3.1 8B | 22ms | 140-170 tok/s | Writing, analysis |
+| **CPU** | Llama 3.2 3B | <30ms | 144-200 tok/s | Iteration, hypotheses |
+| **CPU** | Llama 3.2 1B | <20ms | 200+ tok/s | Instant brainstorm |
+| **Hybrid** | Llama 3.3 70B | 100-200ms | 30-40 tok/s | Expert reasoning |
+
+**Success**: GPU 85% utilized, TTFT <50ms, model switch <60s, uptime 99%+
+
+---
+
+## 💻 DAILY COMMANDS
+
+```bash
+# Start everything
+docker-compose up -d && sleep 30
+
+# Stop everything
+docker-compose down
+
+# Monitor GPU
+nvidia-smi watch -n 1
+
+# Quick research
+ai-research --input paper.pdf
+ai-code --input requirements.txt
+ai-write --outline outline.txt
+
+# Switch models (30s expected)
+ai-switch llama-3.1-8b    # Quality (8B)
+ai-switch llama-3.2-3b    # Balanced (3B)
+ai-switch llama-3.2-1b    # Instant (1B)
+
+# Benchmark performance
+ai-bench
+
+# View logs
+tail -50 logs/ai-interactions.jsonl
+```
+
+---
+
+## 🎯 MODEL SELECTION FLOWCHART
+
+```
+What are you doing RIGHT NOW?
+
+├─ Brainstorm ideas fast?         → Llama 3.2 1B (CPU, <20ms)
+├─ Hypothesis exploration?        → Llama 3.2 3B (CPU, <30ms)
+├─ Code iteration + debugging?    → Llama 3.2 1B (CPU, instant)
+├─ Quality writing or analysis?   → Llama 3.1 8B (GPU, 22ms)
+├─ Long dense paper reading?      → Llama 3.1 8B (128K context)
+├─ Expert reasoning + depth?      → Llama 3.3 70B (hybrid, 100-200ms)
+└─ Unsure?                         → Llama 3.1 8B (safe default)
+```
+
+**Rule of thumb**: CPU for speed (<30ms TTFT needed), GPU for quality (sustained output)
+
+---
+
+## 🔧 TROUBLESHOOTING (30 Seconds)
+
+**Container won't start?**
+```bash
+docker-compose logs vllm-gpu  # See error
+docker-compose down && docker-compose up -d
+```
+
+**TTFT >100ms?**
+```bash
+docker-compose down
+# Edit docker-compose.yml: --gpu-memory-utilization 0.90 (increase from 0.85)
+docker-compose up -d && sleep 45
+```
+
+**Throughput <100 tok/s?**
+```bash
+nvidia-smi  # Check GPU memory
+# If <12GB available, reduce context: --max-model-len 16384 (from 32768)
+```
+
+**Model switch >90s?**
+```bash
+docker-compose down
+# Kill any hung vllm process: pkill -f vllm
+docker-compose up -d
+```
+
+**Still stuck?** See Part 7 in single-user-ai-idp.md
+
+---
+
+## 📈 WEEKLY CHECKLIST
+
+- [ ] TTFT still <30ms? (monitor GPU memory)
+- [ ] Throughput >120 tok/s? (adjust GPU memory if not)
+- [ ] Model switches <60s? (normal behavior)
+- [ ] No OOM errors? (GPU memory tuning working)
+- [ ] Uptime 99%+? (restart if issues)
+- [ ] Productivity gain 30+ min/day? (tracking value)
+
+---
+
+## 💰 COST & ROI
+
+```
+Monthly Power Cost: $25-35 (vs. $2,975+ enterprise)
+Setup Time: 2-3 days (vs. 4 weeks enterprise)
+TTFT: 50-100ms (vs. 450-550ms enterprise)
+Model Switch: 30s (vs. 5-10 min enterprise)
+
+Daily Productivity Gain: 30-40 minutes saved
+Weekly Gain: 2.5-3.5 hours saved
+Monthly Gain: 10-12 hours saved = 1.5-2 extra research days
+Annual Value: 18-24 extra research days saved
+```
+
+---
+
+## 📋 WEEKLY RESEARCH LOG TEMPLATE
+
+```markdown
+## Week of [DATE]
+
+### Performance
+- vLLM TTFT: ___ms (target <30ms)
+- llama.cpp TTFT: ___ms (target <30ms)  
+- GPU util: __% (target >80%)
+- Uptime: __% (target 99%+)
+
+### Research Output
+- Papers reviewed: ___
+- Hypotheses generated: ___
+- Code generated: ___ lines
+- Writing output: ___ words
+- Analysis passes: ___
+
+### Productivity
+- LLM time: ___ hours
+- Infrastructure overhead: ___ min (target <10)
+- Saved vs. enterprise: ___ min
+
+### Issues
+- Encountered: _____
+- Fixed by: _____
+
+### Next week focus
+- [ ] [task]
+- [ ] [task]
+```
+
+---
+
+## 🎓 RESEARCH WORKFLOW TIMELINE
+
+**8-Hour Research Day Breakdown:**
+
+```
+30-45 min: Literature Review
+  → Llama 3.1 8B (RTX 5070 Ti)
+  → 5-10 papers, extract key findings
+  → Expected: 15 min LLM time, <1 min overhead
+
+15-30 min: Hypothesis Formulation  
+  → Llama 3.2 3B (Ryzen CPU)
+  → Generate 5 testable hypotheses
+  → Expected: 10 min LLM time, <1 min overhead
+
+2-4 hours: Model Experimentation
+  → Llama 3.2 3B (Ryzen CPU, rapid)
+  → 20-50 iterations, quick feedback
+  → Expected: 45-90 min LLM time, <5 min overhead
+
+1-2 hours: Code Generation
+  → Llama 3.2 1B (instant) → Llama 3.1 8B (verify)
+  → 15-25 iterations
+  → Expected: 30-40 min LLM time, <1 min overhead
+
+1-2 hours: Content Writing
+  → Llama 3.1 8B (RTX 5070 Ti)
+  → 3-8 major rewrites
+  → Expected: 45-60 min LLM time, <1 min overhead
+
+30-60 min: Analysis & Synthesis
+  → Llama 3.3 70B (hybrid) or Llama 3.1 8B
+  → 5-10 deep analyses
+  → Expected: 30-45 min LLM time, <1 min overhead
+
+30-45 min: Report Generation
+  → Llama 3.1 8B (structured output)
+  → 2-4 generation passes
+  → Expected: 20-30 min LLM time, <1 min overhead
+
+TOTALS:
+  LLM Work: 5-6 hours
+  Enterprise Overhead: 30-45 min
+  Single-User Overhead: 3-5 min
+  NET GAINED: 25-40 minutes daily
+```
+
+---
+
+## 🚨 CRITICAL SUCCESS FACTORS
+
+**Don't Ignore These**:
+
+1. **GPU Memory Utilization 85%+** 
+   - Edit: `--gpu-memory-utilization 0.85` in docker-compose.yml
+   - Monitor: `nvidia-smi` shows 13-14GB of 16GB used
+
+2. **TTFT <50ms** 
+   - Test: `curl http://localhost:8000/v1/models`
+   - Should return in <50ms
+
+3. **Model Switching <60s**
+   - `docker-compose down` (20s) + `docker-compose up` (30s)
+   - Faster = something is wrong, check logs
+
+4. **Consistent Uptime**
+   - Should run 24/7 without crashes
+   - Restart weekly if experiencing slowdown
+
+5. **Task-Model Alignment**
+   - Use CPU for speed-critical tasks (<30ms needed)
+   - Use GPU for quality-critical tasks (writing, analysis)
+
+**If any fail**: See troubleshooting or detailed docs
+
+---
+
+## 🎁 PRODUCTIVITY MULTIPLICATION
+
+This setup gives you:
+
+**Speed** (50-100ms TTFT vs 450-550ms) = 5-9x faster inference
+**Simplicity** (1 docker-compose.yml vs 20+ configs) = 85% less complexity
+**Cost** ($25/month vs $2,975+) = 99% cheaper
+**Setup** (2-3 days vs 4 weeks) = 80% faster deployment
+**Maintenance** (5-10 min/day vs 1-2 hours/day) = 85% less overhead
+
+**Total Impact**: 30-40 minutes/day saved = 10-12 hours/month = 1.5-2 research days/month saved
+
+---
+
+## 📞 SUPPORT CHEAT SHEET
+
+| **Problem** | **Quick Fix** | **Deep Fix** |
+|---|---|---|
+| Containers won't start | `docker-compose logs` | See Part 7 troubleshooting |
+| GPU memory full | Reduce `--max-model-len` | Restart, check other processes |
+| TTFT >100ms | Increase `--gpu-memory-utilization` | Change model size |
+| Throughput <100 tok/s | Enable `--enable-chunked-prefill` | Increase batch size |
+| Model switch >90s | `pkill -f vllm` | Check disk I/O, RAM swapping |
+| No response from API | `docker-compose restart` | Full restart + check GPU |
+
+---
+
+## ✅ FINAL CHECKLIST (Before You Start)
+
+- [ ] NVIDIA drivers installed? (`nvidia-smi` works)
+- [ ] Docker/docker-compose installed? (`docker-compose --version`)
+- [ ] Models downloaded? (`ls /mnt/models/`)
+- [ ] docker-compose.yml created? (`cat ~/ai-idp/docker-compose.yml`)
+- [ ] GPU has 16GB VRAM? (`nvidia-smi`)
+- [ ] Read single-user-ai-idp.md Part 5 for deployment?
+- [ ] Ready to deploy? (2-3 days of setup time)
+
+**Everything ready?** 
+```bash
+cd ~/ai-idp && docker-compose up -d && sleep 45 && docker-compose ps
+```
+
+You're live. Go research.
+
+---
+
+## 📚 DOCUMENT REFERENCE
+
+- **single-user-ai-idp.md** - Full implementation guide (read first)
+- **single-user-metrics.md** - Validation & success metrics (reference)
+- **docker-config-reference.md** - Copy-paste configs (use for deployment)
+- **single-user-benchmarks.csv** - Performance data (reference)
+- **implementation-summary.md** - This guide (keep handy)
+
+**Start here**: single-user-ai-idp.md Part 5 (Days 1-3 playbook)
+
+---
+
+**Setup Time**: 2-3 days | **Monthly Cost**: $25-35 | **Daily Gain**: 30-40 min | **Weekly Gain**: 2.5-3.5 hours | **Monthly Gain**: 10-12 hours

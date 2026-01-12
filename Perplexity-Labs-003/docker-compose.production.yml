@@ -1,0 +1,275 @@
+# ~/ai-idp/docker-compose.yml
+# PRODUCTION-HARDENED Single-User AI IDP
+# Version: 1.0 | Date: 2026-01-12
+#
+# Key corrections from original:
+# - gpu-memory-utilization: 0.85 → 0.80 (OOM margin)
+# - max-num-seqs: 128 → 32 (realistic for 16GB)
+# - Secure API keys (not timestamp-based)
+# - Security hardening options
+# - Localhost-only binding
+
+version: '3.8'
+
+services:
+  # ===========================================================================
+  # vLLM GPU Inference Server
+  # ===========================================================================
+  # Primary inference engine for quality tasks
+  # Corrected Performance Expectations:
+  #   - Throughput: 60-100 tok/s (NOT 140-170 as originally claimed)
+  #   - TTFT P50: 40-80ms warm (NOT 22ms)
+  #   - Max concurrent: 32 (NOT 128)
+  # ===========================================================================
+  vllm-gpu:
+    image: vllm/vllm-openai:v0.7.1
+    container_name: vllm-gpu
+    runtime: nvidia
+    
+    # Security hardening
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - SYS_NICE  # GPU scheduling priority
+    
+    # Run as non-root
+    user: "1000:1000"
+    
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=0
+      - TZ=America/Chicago
+      - PYTHONUNBUFFERED=1
+      - VLLM_ATTENTION_BACKEND=flashinfer
+      # API key loaded from env_file below
+    
+    # Load secure API keys
+    env_file:
+      - ./secrets/api-keys.env
+    
+    volumes:
+      - /mnt/models/llama-3.1-8b-fp8:/models:ro
+      - ./logs/vllm:/app/logs:rw
+      - vllm-cache:/root/.cache/huggingface:rw
+    
+    tmpfs:
+      - /tmp:size=2G,mode=1777
+    
+    # Bind to localhost only (security)
+    ports:
+      - "127.0.0.1:8000:8000"
+    
+    command: >
+      --model /models/llama-3.1-8b-instruct
+      --quantization fp8
+      --kv-cache-dtype fp8
+      --dtype float16
+      --max-model-len 16384
+      --gpu-memory-utilization 0.80
+      --max-num-seqs 32
+      --max-num-batched-tokens 4096
+      --enable-chunked-prefill
+      --enable-prefix-caching
+      --block-size 16
+      --seed 42
+      --tensor-parallel-size 1
+      --served-model-name llama-3.1-8b
+      --api-key ${VLLM_API_KEY}
+      --disable-log-stats
+      --log-level INFO
+    
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    
+    restart: unless-stopped
+    
+    deploy:
+      resources:
+        limits:
+          memory: 20G
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0']
+              capabilities: [gpu]
+    
+    networks:
+      - ai-network
+    
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # ===========================================================================
+  # llama.cpp CPU Inference Server
+  # ===========================================================================
+  # CPU inference for fast iteration and brainstorming
+  # Corrected Performance Expectations:
+  #   - Throughput: 100-150 tok/s (NOT 144-200)
+  #   - TTFT: ~30-50ms
+  #   - Optimal for: 1-3B models
+  # ===========================================================================
+  llamacpp-cpu:
+    image: ghcr.io/ggerganov/llama.cpp:server
+    container_name: llamacpp-cpu
+    
+    # Security hardening
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    cap_drop:
+      - ALL
+    
+    volumes:
+      - /mnt/models/llama-3.2-3b-q4:/models:ro
+      - ./logs/llamacpp:/app/logs:rw
+    
+    tmpfs:
+      - /tmp:size=1G,mode=1777
+    
+    # Bind to localhost only
+    ports:
+      - "127.0.0.1:8001:8080"
+    
+    environment:
+      - TZ=America/Chicago
+    
+    # Corrected configuration:
+    # - threads: 10 (optimal for Ryzen 9900X 12-core)
+    # - batch-size: 1024 (reduced from 2048 for cache efficiency)
+    # - parallel: 8 (concurrent request slots)
+    command: >
+      --model /models/llama-3.2-3b-Q4_K_M.gguf
+      --threads 10
+      --batch-size 1024
+      --ctx-size 8192
+      --n-gpu-layers 0
+      --parallel 8
+      --cont-batching
+      --metrics
+      --port 8080
+    
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    
+    restart: unless-stopped
+    
+    deploy:
+      resources:
+        limits:
+          cpus: '10.0'
+          memory: 32G
+        reservations:
+          cpus: '8.0'
+          memory: 24G
+    
+    networks:
+      - ai-network
+    
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  # ===========================================================================
+  # llama.cpp 70B Hybrid (OPTIONAL - Expert Profile)
+  # ===========================================================================
+  # CORRECTED: Original claims of 30-40 tok/s are PHYSICALLY IMPOSSIBLE
+  # Realistic Performance:
+  #   - Throughput: 8-15 tok/s (memory bandwidth limited)
+  #   - TTFT: 500-1500ms (large model init)
+  #   - Use ONLY for: Deep expert reasoning, not interactive chat
+  #
+  # Enable with: docker-compose --profile expert up -d
+  # ===========================================================================
+  llamacpp-70b-hybrid:
+    image: ghcr.io/ggerganov/llama.cpp:server
+    container_name: llamacpp-70b
+    runtime: nvidia
+    
+    profiles:
+      - expert  # Only start with --profile expert
+    
+    security_opt:
+      - no-new-privileges:true
+    
+    volumes:
+      - /mnt/models/llama-3.3-70b-q4:/models:ro
+      - ./logs/llamacpp-70b:/app/logs:rw
+    
+    ports:
+      - "127.0.0.1:8002:8080"
+    
+    environment:
+      - TZ=America/Chicago
+    
+    # CORRECTED 70B configuration based on physics:
+    # With 16GB VRAM + DDR5-6400 (51.2 GB/s):
+    # - n-gpu-layers: 20 (max that fits in 16GB VRAM ~14GB used)
+    # - Remaining 60 layers on CPU bottleneck throughput
+    # - batch-size: 512 (reduced for memory bandwidth)
+    # - parallel: 2 (limited concurrent due to memory)
+    command: >
+      --model /models/llama-3.3-70b-Q4_K_M.gguf
+      --threads 12
+      --batch-size 512
+      --ctx-size 4096
+      --n-gpu-layers 20
+      --parallel 2
+      --cont-batching
+      --metrics
+      --port 8080
+    
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/health"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      start_period: 180s  # 70B takes time to load
+    
+    restart: unless-stopped
+    
+    deploy:
+      resources:
+        limits:
+          cpus: '12.0'
+          memory: 96G
+        reservations:
+          cpus: '10.0'
+          memory: 64G
+          devices:
+            - driver: nvidia
+              device_ids: ['0']
+              capabilities: [gpu]
+    
+    networks:
+      - ai-network
+
+# ===========================================================================
+# Networks
+# ===========================================================================
+networks:
+  ai-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# ===========================================================================
+# Volumes
+# ===========================================================================
+volumes:
+  vllm-cache:
+    driver: local

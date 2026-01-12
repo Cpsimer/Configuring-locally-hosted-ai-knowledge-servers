@@ -1,0 +1,8 @@
+Workflow_Stage,Optimal_Model,Hardware,Key_Metric
+Literature Review,Llama 3.1 8B,RTX 5070 Ti,Context window >100K
+Hypothesis Formulation,Llama 3.2 3B,Ryzen 9900X,TTFT <100ms
+Model Experimentation,Llama 3.3 70B,RTX 5070 Ti,144+ tok/s
+Code Generation,Llama 3.2 1B + 8B,Ryzen 9900X,Code quality + speed
+Content Writing,Llama 3.1 8B,RTX 5070 Ti,Coherence + length
+Analysis,Llama 3.3 70B,RTX 5070 Ti,Reasoning depth
+Report Generation,Llama 3.1 8B,RTX 5070 Ti,JSON/structured output

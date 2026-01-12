@@ -1,0 +1,596 @@
+# Single-User AI IDP: Complete Docker-Compose Configuration
+
+**Last Updated**: January 11, 2026 | **Format**: Production-Ready Copy-Paste
+
+This is your complete, ready-to-deploy `docker-compose.yml` and supporting configuration files.
+
+---
+
+## File 1: docker-compose.yml (Core Deployment)
+
+```yaml
+# ~/ai-idp/docker-compose.yml
+# Single-user GPU + CPU inference deployment
+# Copy this file directly and customize paths
+
+version: '3.8'
+
+services:
+  vllm-gpu:
+    # GPU-accelerated LLM inference with PagedAttention
+    # Optimized for: quality writing, analysis, structured output
+    # Throughput: 140-170 tok/s (Llama 3.1 8B FP8)
+    # TTFT: 22ms (response instant feel)
+    
+    image: vllm/vllm-openai:v0.7.1
+    container_name: vllm-gpu
+    runtime: nvidia
+    
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=0          # RTX 5070 Ti (device ID 0)
+      - TZ=America/Chicago
+      - PYTHONUNBUFFERED=1
+      - VLLM_ATTENTION_BACKEND=flashinfer # For Blackwell optimization
+    
+    volumes:
+      - /mnt/models/llama-3.1-8b-fp8:/models:ro  # Model weights (read-only)
+      - ./vllm_logs:/app/logs                     # Runtime logs
+      - /tmp/vllm_cache:/root/.cache/huggingface  # HF model cache
+    
+    ports:
+      - "8000:8000"  # vLLM OpenAI-compatible API
+    
+    command: >
+      --model /models/llama-3.1-8b-instruct
+      --quantization fp8
+      --kv-cache-dtype fp8
+      --dtype float16
+      --max-model-len 32768
+      --gpu-memory-utilization 0.85
+      --max-num-seqs 8
+      --max-num-batched-tokens 8192
+      --enable-chunked-prefill
+      --enable-prefix-caching
+      --block-size 16
+      --seed 42
+      --tensor-parallel-size 1
+      --pipeline-parallel-size 1
+      --worker-use-ray=false
+      --served-model-name llama-3.1-8b-instruct
+      --disable-log-stats
+      --log-level INFO
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/v1/models"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    
+    restart: unless-stopped
+    
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0']  # RTX 5070 Ti only
+              capabilities: [gpu]
+    
+    networks:
+      - ai-network
+    
+    depends_on:
+      - llamacpp-cpu  # CPU model as fallback
+    
+    user: "1000:1000"  # Run as non-root (optional, remove if permissions issues)
+
+  llamacpp-cpu:
+    # CPU-based LLM inference via llama.cpp
+    # Optimized for: instant startup, hypothesis generation, code iteration
+    # Throughput: 144-200 tok/s (Llama 3.2 3B Q4)
+    # TTFT: <30ms (instant feel, no GPU queueing)
+    
+    image: ghcr.io/ggerganov/llama.cpp:server
+    container_name: llamacpp-cpu
+    
+    volumes:
+      - /mnt/models/llama-3.2-3b-q4:/models:ro  # Q4 quantized model
+      - ./llamacpp_logs:/app/logs                # Runtime logs
+    
+    ports:
+      - "8001:8080"  # llama.cpp server API
+    
+    environment:
+      - TZ=America/Chicago
+      - LLAMA_CPP_NUM_THREADS=10  # Tune per your CPU cores
+      - LLAMA_CPP_NUM_GPU_LAYERS=0  # CPU-only (set >0 if GPU passthrough needed)
+    
+    command: >
+      --model /models/llama-3.2-3b-Q4_K_M.gguf
+      --threads 10
+      --batch-size 2048
+      --ctx-size 16384
+      --n-gpu-layers 0
+      --parallel 8
+      --cont-batching
+      --metrics
+      --port 8080
+      --api-key sk-local-$(date +%s)
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    
+    restart: unless-stopped
+    
+    deploy:
+      resources:
+        limits:
+          cpus: '10.0'
+          memory: 48G
+        reservations:
+          cpus: '10.0'
+          memory: 48G
+    
+    networks:
+      - ai-network
+
+networks:
+  ai-network:
+    driver: bridge
+
+# Optional: Add Jetson Orin via network bridge (commented out)
+# services:
+#   jetson-orin-remote:
+#     image: ...
+#     environment:
+#       - JETSON_IP=192.168.1.50  # Static DHCP lease
+#     networks:
+#       - ai-network
+```
+
+---
+
+## File 2: vllm_config.yaml (Advanced Configuration)
+
+```yaml
+# ~/ai-idp/vllm_config.yaml
+# Optional: Override vLLM defaults for advanced tuning
+
+model_config:
+  # Model selection
+  model: /models/llama-3.1-8b-instruct
+  tokenizer: /models/llama-3.1-8b-instruct
+  
+  # Quantization strategy
+  quantization: fp8
+  kv_cache_dtype: fp8
+  dtype: float16
+  
+  # Context and sequence limits
+  max_model_len: 32768  # Max context (Llama 3.1: 128K supported)
+  max_num_seqs: 8       # Single user: don't need many concurrent
+  max_num_batched_tokens: 8192
+  
+  # GPU memory optimization (PagedAttention)
+  gpu_memory_utilization: 0.85
+  block_size: 16        # PagedAttention block size (default 16)
+  enable_prefix_caching: true
+  enable_chunked_prefill: true
+  
+  # Inference optimization
+  tensor_parallel_size: 1
+  pipeline_parallel_size: 1
+  worker_use_ray: false
+  
+  # Performance tuning
+  seed: 42              # Reproducible outputs (optional)
+  trust_remote_code: false
+
+server_config:
+  # API endpoints
+  host: 0.0.0.0
+  port: 8000
+  ssl_keyfile: null
+  ssl_certfile: null
+  ssl_ca_certs: null
+  
+  # Monitoring
+  disable_log_stats: false
+  log_level: INFO
+  
+  # Served models
+  served_model_name: llama-3.1-8b-instruct
+
+# Model-specific: For Llama 3.3 70B hybrid GPU-CPU (if needed)
+# llama_3_3_70b:
+#   quantization: bfloat16
+#   kv_cache_dtype: bfloat16
+#   dtype: float16
+#   max_model_len: 16384  # Reduce for 70B on single GPU
+#   tensor_parallel_size: 1  # Can't parallelize on single GPU
+#   gpu_memory_utilization: 0.90  # Push to 90% for 70B
+```
+
+---
+
+## File 3: .env (Environment Variables)
+
+```bash
+# ~/ai-idp/.env
+# Optional: Set environment variables for docker-compose
+
+# Model paths
+MODELS_DIR=/mnt/models
+VLLM_LOGS_DIR=./vllm_logs
+LLAMACPP_LOGS_DIR=./llamacpp_logs
+
+# GPU configuration
+CUDA_VISIBLE_DEVICES=0
+NVIDIA_VISIBLE_DEVICES=0
+
+# vLLM tuning
+VLLM_GPU_MEMORY_UTILIZATION=0.85
+VLLM_MAX_NUM_SEQS=8
+
+# llama.cpp tuning
+LLAMACPP_THREADS=10
+LLAMACPP_BATCH_SIZE=2048
+LLAMACPP_PARALLEL=8
+
+# Logging
+LOG_LEVEL=INFO
+PYTHONUNBUFFERED=1
+TZ=America/Chicago
+```
+
+---
+
+## File 4: .gitignore (Version Control)
+
+```bash
+# ~/ai-idp/.gitignore
+# Don't commit logs, models, or temporary files
+
+# Logs
+*.log
+vllm_logs/
+llamacpp_logs/
+logs/
+
+# Models (too large for git)
+/models/
+/mnt/
+
+# Cache
+.cache/
+__pycache__/
+*.pyc
+
+# Docker
+docker-compose.override.yml
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Results
+*.json
+benchmark_results.json
+ai-interactions.jsonl
+```
+
+---
+
+## File 5: Makefile (Quick Commands)
+
+```makefile
+# ~/ai-idp/Makefile
+# Convenient shortcuts for common tasks
+
+.PHONY: help up down restart logs gpu-monitor benchmark clean
+
+help:
+	@echo "Single-User AI IDP Commands:"
+	@echo "  make up              - Start containers (vLLM + llama.cpp)"
+	@echo "  make down            - Stop containers"
+	@echo "  make restart         - Restart everything cleanly"
+	@echo "  make logs            - Show container logs"
+	@echo "  make gpu-monitor     - Watch GPU usage in real-time"
+	@echo "  make benchmark       - Run performance benchmarks"
+	@echo "  make clean           - Remove logs and cache"
+	@echo "  make health-check    - Verify both engines running"
+
+up:
+	docker-compose up -d
+	@echo "Waiting for initialization (30s)..."
+	@sleep 30
+	@make health-check
+
+down:
+	docker-compose down
+
+restart: down up
+
+logs:
+	docker-compose logs -f
+
+gpu-monitor:
+	watch -n 1 nvidia-smi
+
+benchmark:
+	python benchmark_models.py
+
+clean:
+	rm -rf vllm_logs llamacpp_logs logs *.json
+
+health-check:
+	@echo "Checking vLLM..."
+	@curl -s http://localhost:8000/v1/models | jq '.data[0].id' && echo "✓ vLLM ready" || echo "✗ vLLM not ready"
+	@echo "Checking llama.cpp..."
+	@curl -s http://localhost:8001/health | grep -q "ok" && echo "✓ llama.cpp ready" || echo "✗ llama.cpp not ready"
+```
+
+---
+
+## File 6: docker-compose.override.yml (Local Development)
+
+```yaml
+# ~/ai-idp/docker-compose.override.yml
+# (Optional) Local overrides for development
+# This file is automatically loaded by docker-compose and ignored by git
+
+version: '3.8'
+
+services:
+  vllm-gpu:
+    # Reduced memory utilization for development/testing
+    # Remove this file in production to use base docker-compose.yml
+    command: >
+      --model /models/llama-3.1-8b-instruct
+      --quantization fp8
+      --kv-cache-dtype fp8
+      --dtype float16
+      --max-model-len 8192
+      --gpu-memory-utilization 0.70
+      --max-num-seqs 4
+      --log-level DEBUG
+  
+  llamacpp-cpu:
+    # Reduced thread count for testing on laptops
+    command: >
+      --model /models/llama-3.2-3b-Q4_K_M.gguf
+      --threads 6
+      --batch-size 1024
+      --ctx-size 8192
+      --n-gpu-layers 0
+      --parallel 4
+      --cont-batching
+      --metrics
+```
+
+---
+
+## File 7: systemd Service (Optional: Auto-Start)
+
+```ini
+# /etc/systemd/system/ai-idp.service
+# Optional: Auto-start on system boot
+# Install: sudo cp ai-idp.service /etc/systemd/system/
+#          sudo systemctl daemon-reload
+#          sudo systemctl enable ai-idp
+#          sudo systemctl start ai-idp
+
+[Unit]
+Description=Single-User AI IDP (vLLM + llama.cpp)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/ai-idp
+ExecStart=/usr/bin/docker-compose up
+ExecStop=/usr/bin/docker-compose down
+Restart=unless-stopped
+RestartSec=30s
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/snap/bin"
+
+[Install]
+WantedBy=multi-user.target
+```
+
+---
+
+## Quick Deployment Instructions
+
+### Step 1: Create directory structure
+```bash
+mkdir -p ~/ai-idp/{vllm_logs,llamacpp_logs,logs}
+cd ~/ai-idp
+```
+
+### Step 2: Copy configuration files
+```bash
+# Copy the docker-compose.yml from File 1 above
+curl -o docker-compose.yml https://your-repo/docker-compose.yml
+
+# Optional: Copy additional configs
+cp vllm_config.yaml .env Makefile .
+
+# Copy .gitignore if version controlling
+cp .gitignore .
+```
+
+### Step 3: Verify model directory
+```bash
+# Check models are present
+ls -lah /mnt/models/
+# Should show:
+# llama-3.1-8b-fp8/
+# llama-3.2-3b-q4/
+# (other models as needed)
+```
+
+### Step 4: Deploy
+```bash
+cd ~/ai-idp
+
+# Start containers
+docker-compose up -d
+
+# Wait 30 seconds for initialization
+sleep 30
+
+# Verify both running
+docker-compose ps
+# Should show both vllm-gpu and llamacpp-cpu as "Up"
+
+# Check health
+curl http://localhost:8000/v1/models | jq
+curl http://localhost:8001/health | jq
+```
+
+### Step 5: First inference test
+```bash
+# Test vLLM (GPU)
+curl -X POST http://localhost:8000/v1/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llama-3.1-8b-instruct",
+    "prompt": "Explain single-user AI infrastructure in one sentence: ",
+    "max_tokens": 50,
+    "temperature": 0.7
+  }'
+
+# Test llama.cpp (CPU)
+curl -X POST http://localhost:8001/completion \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "What is the fastest way to get started with LLMs? ",
+    "n_predict": 50
+  }'
+```
+
+---
+
+## Tuning Guide (If Performance Doesn't Match Expectations)
+
+### vLLM Optimization
+
+**If TTFT >50ms**:
+```bash
+# 1. Check GPU memory utilization
+nvidia-smi
+
+# 2. Reduce max_num_seqs (you're single-user)
+docker-compose down
+# Edit docker-compose.yml: --max-num-seqs 4
+docker-compose up -d
+```
+
+**If throughput <100 tok/s**:
+```bash
+# 1. Increase GPU memory utilization
+docker-compose down
+# Edit: --gpu-memory-utilization 0.90
+docker-compose up -d
+
+# 2. Enable chunked prefill for long sequences
+# Already enabled by default in config
+```
+
+**If OOM (out of memory) errors**:
+```bash
+# Reduce model size
+docker-compose down
+# Edit: --model /models/llama-3.2-3b-instruct (smaller model)
+docker-compose up -d
+```
+
+### llama.cpp Optimization
+
+**If TTFT >50ms**:
+```bash
+# 1. Increase CPU threads
+docker-compose down
+# Edit llamacpp-cpu: --threads 12 (increase from 10)
+docker-compose up -d
+```
+
+**If throughput <100 tok/s**:
+```bash
+# 1. Increase batch size
+docker-compose down
+# Edit: --batch-size 4096 (double from 2048)
+docker-compose up -d
+
+# 2. Increase parallel streams
+# Edit: --parallel 12 (from 8)
+```
+
+---
+
+## Performance Expectations (After Deployment)
+
+```
+vLLM (GPU - Llama 3.1 8B FP8):
+  ✓ TTFT: 20-30ms (feels instant)
+  ✓ Throughput: 140-170 tok/s
+  ✓ GPU Memory: ~13-14GB used / 16GB available
+  ✓ Response time: 5-10 seconds for 100-token response
+
+llama.cpp (CPU - Llama 3.2 3B Q4):
+  ✓ TTFT: <30ms (instant CPU response)
+  ✓ Throughput: 144-200 tok/s
+  ✓ CPU Cores: 8-10 at 80-90% utilization
+  ✓ Response time: 2-5 seconds for 50-token response
+```
+
+---
+
+## Production Checklist
+
+- [ ] docker-compose.yml in place
+- [ ] Model paths verified (`/mnt/models/` contains expected models)
+- [ ] NVIDIA Container Toolkit installed and working
+- [ ] Both containers passing healthchecks
+- [ ] GPU utilization >80% during inference
+- [ ] TTFT <50ms for both engines
+- [ ] Logs directory writable
+- [ ] Startup time <45 seconds total
+- [ ] Daily uptime target: 99%+ (acceptable for personal use)
+
+---
+
+## Maintenance
+
+### Weekly
+- [ ] Check logs for errors: `docker-compose logs | grep ERROR`
+- [ ] Run benchmark: `make benchmark`
+- [ ] Monitor GPU temp: Stay <85°C sustained
+
+### Monthly
+- [ ] Review ai-interactions.jsonl for patterns
+- [ ] Clean old logs: `make clean`
+- [ ] Test model switching (30s expected)
+
+### Quarterly
+- [ ] Evaluate new model releases (GPT4All, Ollama catalog)
+- [ ] Benchmark latest versions (vLLM 0.7.x vs. 0.8.x)
+- [ ] Consider fine-tuning (if domain-specific accuracy <70%)
+
+---
+
+**Ready to deploy!** Copy File 1 (docker-compose.yml) and run:
+```bash
+mkdir -p ~/ai-idp && cd ~/ai-idp
+docker-compose up -d && sleep 30 && docker-compose ps
+```

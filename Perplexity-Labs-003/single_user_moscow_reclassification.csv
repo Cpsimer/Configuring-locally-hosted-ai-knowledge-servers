@@ -1,0 +1,16 @@
+Service,Original_Category,Single_User_Category,Reason_for_Change
+vLLM with PagedAttention,Must-Have,Must-Have,No change - core inference
+llama.cpp (CPU inference),Must-Have,Must-Have,No change - CPU activation
+NVIDIA Container Toolkit,Must-Have,Must-Have,No change - GPU runtime
+NVIDIA Triton Inference Server,Should-Have,Could-Have,Demoted: single-user doesn't need multi-model routing
+Local Model Management (Ollama/HF CLI),Must-Have,Must-Have,Promoted: critical for model versioning
+NVIDIA DCGM Exporter,Should-Have,Won't-Have,Eliminated: single-user doesn't need 24/7 monitoring
+TensorRT-LLM Quantization Pipeline,Should-Have,Must-Have,Promoted: directly optimizes inference
+Vault Secrets Management,Should-Have,Won't-Have,Eliminated: no multi-user secrets needed
+NGINX Reverse Proxy,Should-Have,Won't-Have,Eliminated: single-user can use curl/Python
+Prometheus/Grafana Monitoring,Should-Have,Could-Have,Demoted: optional for personal use
+Jenkins CI/CD Pipeline,Should-Have,Won't-Have,Eliminated: manual model swapping acceptable
+Authentik OAuth2,Should-Have,Won't-Have,Eliminated: localhost only access
+NVIDIA NIM Microservices,Should-Have,Could-Have,Demoted: vLLM sufficient without pre-tuning
+NVIDIA RAPIDS Accelerator,Could-Have,Could-Have,No change - low priority
+NVIDIA Blueprints Reference Code,Should-Have,Should-Have,Promoted: accelerates research implementation

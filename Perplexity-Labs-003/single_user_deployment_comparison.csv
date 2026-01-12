@@ -1,0 +1,10 @@
+Metric,Enterprise_100User,Single_User_Optimized,Improvement
+Setup Time,4 weeks,2-3 days,2 weeks faster
+Containers,8-10,2,75% fewer
+Config Files,15-20,2,85% fewer
+Infrastructure Services,Full LXC stack,None,100% reduction
+Daily Maintenance,1-2 hours,5-10 min,85% less
+Model Switching,5-10 min,30 sec,95% faster
+TTFT Latency,450-550ms,50-100ms,80-85% reduction
+GPU Memory,12GB reserved,14-16GB dynamic,No fragmentation
+Monthly Power Cost,$150-180,$25-35,80% savings

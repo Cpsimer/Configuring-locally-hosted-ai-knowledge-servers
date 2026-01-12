@@ -1,0 +1,424 @@
+# Single-User AI IDP: Complete Documentation Index
+
+**Your Personal AI Infrastructure Development Platform**
+**Optimized for: 1 Active User | Operations Management + Software Development Student**
+**Setup Time: 2-3 Days | Cost: $25-35/Month | ROI: 30-40 Minutes Daily Productivity Gain**
+
+---
+
+## 📚 Documentation Roadmap
+
+### **START HERE** (Estimate: Read Time 5-10 Minutes)
+1. **quick-reference-card.md** ← YOU ARE HERE
+   - Print or save to phone
+   - Daily commands, model selection flowchart
+   - Troubleshooting quick fixes
+   - **Action**: Read this first, bookmark it
+
+### **UNDERSTAND THE VISION** (Estimate: Read Time 15-20 Minutes)
+2. **implementation-summary.md**
+   - What you're building and why
+   - Day-by-day deployment timeline
+   - Success criteria and validation
+   - Monthly roadmap
+   - **Action**: Understand the complete picture before deploying
+
+### **BUILD IT** (Estimate: Time 2-3 Days)
+3. **single-user-ai-idp.md** (Main Playbook - 3000+ words)
+   - Part 1: MoSCoW Reclassification (what stays, what goes)
+   - Part 2: Workflow Optimization Matrix (your exact research tasks)
+   - Part 3: Infrastructure Simplification (350-400ms latency savings explained)
+   - Part 4: Simplified Architecture (visual diagram + explanation)
+   - Part 5: Minimal Deployment Playbook (Days 1-3 step-by-step)
+   - Part 6: Performance Benchmarks (validation data)
+   - Part 7: Troubleshooting & Optimization (if things go wrong)
+   - Part 8: Monthly Cost Breakdown ($2,950/month savings)
+   - Part 9: Future Evolution Paths (Month 2-4+ roadmap)
+   - **Action**: Follow Part 5 (Days 1-3 Playbook) exactly for deployment
+
+4. **docker-config-reference.md** (Copy-Paste Deployment)
+   - File 1: Ready-to-use docker-compose.yml (copy directly)
+   - File 2: vLLM configuration file
+   - File 3: .env environment variables
+   - File 4: .gitignore for version control
+   - File 5: Makefile shortcuts
+   - File 6: docker-compose.override.yml (optional)
+   - File 7: systemd service for auto-start (optional)
+   - Quick deployment instructions
+   - Tuning guide (if performance doesn't match)
+   - **Action**: Copy docker-compose.yml when deploying
+
+### **VALIDATE & OPTIMIZE** (Estimate: 1-2 Hours)
+5. **single-user-metrics.md** (Detailed Metrics)
+   - Executive summary: 80-85% latency reduction explained
+   - Infrastructure simplification matrix (350-400ms breakdown)
+   - Cost reduction analysis ($2,950/month savings)
+   - Detailed workflow time allocation (7 stages × daily cycles)
+   - Model selection decision tree
+   - Weekly success metrics (what to track)
+   - **Action**: Run benchmarks, compare against your metrics
+
+6. **single-user-benchmarks.csv** (Performance Data)
+   - Configuration-by-configuration performance
+   - Single-user optimization recommendations
+   - Model-specific use cases
+   - Expected throughput/latency ranges
+   - **Action**: Reference for performance validation
+
+---
+
+## 🎯 Three Paths Through Documentation
+
+### **Path 1: "Just Deploy It" (Impatient Developer)**
+1. Read: **quick-reference-card.md** (5 min)
+2. Read: **implementation-summary.md** Days 1-3 Checklist (5 min)
+3. Deploy: Copy **docker-compose.yml** from **docker-config-reference.md** (5 min)
+4. Run: `docker-compose up -d && sleep 30` (2 min)
+5. Verify: `docker-compose ps` and `curl http://localhost:8000/v1/models` (2 min)
+6. Done: Use as-is
+
+**Total Time: 20 minutes to running system**
+**Risk**: May miss optimization opportunities or hit errors
+
+---
+
+### **Path 2: "I Want Context" (Thoughtful Developer)**
+1. Read: **implementation-summary.md** (20 min)
+2. Read: Part 1-3 of **single-user-ai-idp.md** (30 min) for architecture context
+3. Skim: **single-user-metrics.md** (10 min) for ROI validation
+4. Deploy: Follow Part 5 (Days 1-3) of **single-user-ai-idp.md** (2-3 days)
+5. Validate: Run benchmarks, compare to **single-user-metrics.md** (1-2 hours)
+6. Troubleshoot: Use Part 7 of **single-user-ai-idp.md** if issues (30 min)
+
+**Total Time: 1 hour reading + 2-3 days deployment + 1-2 hours validation = 2-4 days**
+**Risk: Low - you understand the "why" before deploying**
+
+---
+
+### **Path 3: "Deep Dive" (Perfectionist Developer)**
+1. Read everything in order (2-3 hours total reading)
+2. Create a notes document with your customizations
+3. Simulate the deployment steps on paper first
+4. Deploy following Part 5 exactly (2-3 days)
+5. Measure against all metrics in **single-user-metrics.md**
+6. Optimize using tuning guide in **docker-config-reference.md**
+7. Document your performance baselines for future comparison
+
+**Total Time: 2-3 hours reading + 2-3 days deployment + 3-4 hours optimization = 3-4 days**
+**Risk: Very low - you're prepared for any issue**
+
+---
+
+## 🗺️ Navigation By Use Case
+
+### "I want to understand the ROI"
+→ Read: **implementation-summary.md** + **single-user-metrics.md**
+(40 minutes, answer: 30-40 min/day saved, $2,950/month cost reduction)
+
+### "I want to deploy this weekend"
+→ Read: **quick-reference-card.md** → Deploy from **docker-config-reference.md**
+(20 minutes reading + deployment, ready by Sunday evening)
+
+### "I want to understand the architecture"
+→ Read: Parts 1-3 of **single-user-ai-idp.md**
+(30 minutes, understand: why things are simplified, where 350ms latency goes)
+
+### "I want to know which model to use when"
+→ Read: Part 2 of **single-user-ai-idp.md** (Workflow Matrix) + **quick-reference-card.md** (Model Selection Flowchart)
+(15 minutes, understand: exact model for each research task)
+
+### "I'm hitting performance issues"
+→ Read: Part 7 of **single-user-ai-idp.md** (Troubleshooting) + **docker-config-reference.md** (Tuning Guide)
+(20 minutes, diagnose: TTFT, throughput, GPU memory, CPU threads issues)
+
+### "I want to track progress over time"
+→ Read: **single-user-metrics.md** (Weekly Success Metrics) + **implementation-summary.md** (Monthly Roadmap)
+(15 minutes, create: weekly performance tracking document)
+
+---
+
+## 📋 Document Organization
+
+### **By Purpose**
+
+| **Purpose** | **Document** | **Length** | **Read Time** |
+|---|---|---|---|
+| Quick daily reference | quick-reference-card.md | 1 page | 5 min |
+| High-level understanding | implementation-summary.md | 5 pages | 20 min |
+| Complete architecture guide | single-user-ai-idp.md | 3000+ words | 60 min |
+| Production-ready configs | docker-config-reference.md | 2000+ words | 30 min |
+| Performance validation | single-user-metrics.md | 2000+ words | 40 min |
+| Raw data (CSV) | single-user-benchmarks.csv | 10 rows | 5 min |
+
+### **By Stage**
+
+| **Stage** | **Documents** | **Action** |
+|---|---|---|
+| **Planning** | implementation-summary.md | Understand timeline & ROI |
+| **Design** | single-user-ai-idp.md Parts 1-3 | Understand architecture |
+| **Deployment** | docker-config-reference.md | Copy configs & deploy |
+| **Day 1-3** | single-user-ai-idp.md Part 5 | Follow playbook exactly |
+| **Validation** | single-user-metrics.md + benchmarks | Run and compare |
+| **Troubleshooting** | single-user-ai-idp.md Part 7 | Fix any issues |
+| **Daily Use** | quick-reference-card.md | Use as cheat sheet |
+| **Monthly Optimization** | implementation-summary.md (Monthly Roadmap) | Plan improvements |
+
+---
+
+## 🎯 Critical Path (Fastest Route to Production)
+
+```
+Day 0: Planning (1 hour)
+  → Read: implementation-summary.md (understand the vision)
+  → Read: quick-reference-card.md (bookmark for daily use)
+
+Day 1: Foundation (3 hours)
+  → Follow: single-user-ai-idp.md Part 5, Day 1
+  → Copy from: docker-config-reference.md (File 1)
+  → Deploy: docker-compose up -d
+  → Verify: docker-compose ps (both containers up)
+
+Day 2: Integration (4 hours)
+  → Follow: single-user-ai-idp.md Part 5, Day 2
+  → Create: research_assistant.py (copy from Part 5)
+  → Test: Basic workflow (literature → hypothesis → code)
+
+Day 3: Validation (2 hours)
+  → Follow: single-user-ai-idp.md Part 5, Day 3
+  → Run: Benchmarks (compare to single-user-metrics.md)
+  → Verify: TTFT <50ms, throughput >120 tok/s, uptime 99%+
+
+Total: 3 days elapsed, 10 hours work, system production-ready
+```
+
+---
+
+## 📊 Success Metrics Checklist
+
+### **After Day 1** (Foundation)
+- [ ] Both containers running (`docker-compose ps` shows 2/2 up)
+- [ ] GPU memory allocated (nvidia-smi shows 13-14GB of 16GB used)
+- [ ] API responding (`curl http://localhost:8000/v1/models` works)
+- [ ] No GPU errors in logs
+
+### **After Day 2** (Integration)
+- [ ] Research scripts functional (ai-research, ai-code, ai-write work)
+- [ ] Model switcher working (30-90 second restart time)
+- [ ] Logging system active (ai-interactions.jsonl growing)
+- [ ] Baseline metrics documented
+
+### **After Day 3** (Validation)
+- [ ] Complete workflow tested (literature → writing → analysis)
+- [ ] TTFT <50ms (aim for 20-30ms)
+- [ ] Throughput >120 tok/s (aim for 140-170 tok/s)
+- [ ] GPU utilization 85%+ (optimal memory usage)
+- [ ] Model switch <60s (aim for 30s)
+- [ ] Uptime 99%+ (no crashes during 8-hour test)
+- [ ] Ready for production use
+
+### **First Month**
+- [ ] 30+ minutes daily productivity gain maintained
+- [ ] No infrastructure overhead (5-10 min/day)
+- [ ] All research workflows optimized
+- [ ] Monthly power cost <$40
+- [ ] Zero unplanned downtime
+
+---
+
+## 🔄 Document Update Schedule
+
+| **Document** | **Frequency** | **When to Update** |
+|---|---|---|
+| quick-reference-card.md | Monthly | Add new commands, model recipes |
+| implementation-summary.md | Quarterly | Update roadmap, lessons learned |
+| single-user-ai-idp.md | As-needed | New optimization tips, model updates |
+| docker-config-reference.md | As-needed | vLLM/llama.cpp version updates |
+| single-user-metrics.md | Monthly | Update with actual performance |
+| single-user-benchmarks.csv | Quarterly | New model variants, hardware changes |
+
+---
+
+## 🚀 How to Use This Documentation
+
+### For First-Time Setup
+1. **Start with**: quick-reference-card.md (bookmark it)
+2. **Then read**: implementation-summary.md (understand the plan)
+3. **Follow step-by-step**: single-user-ai-idp.md Part 5 (Days 1-3)
+4. **Copy configs**: docker-config-reference.md (File 1)
+5. **Validate against**: single-user-metrics.md (benchmark your system)
+
+### For Daily Use
+- **Keep open**: quick-reference-card.md (model selection, commands)
+- **Reference**: docker-config-reference.md (troubleshooting)
+
+### For Optimization
+- **Compare**: Your metrics vs. single-user-metrics.md
+- **Tune**: Using docker-config-reference.md (Tuning Guide)
+- **Track**: Weekly using implementation-summary.md template
+
+### For Month 2+
+- **Follow**: implementation-summary.md (Monthly Roadmap)
+- **Evaluate**: NIM vs. vLLM (Part 9 of single-user-ai-idp.md)
+- **Consider**: Custom fine-tuning (Part 9, Month 3+)
+
+---
+
+## 💡 Pro Tips
+
+### **Bookmark These**
+- quick-reference-card.md (daily reference)
+- docker-config-reference.md (Troubleshooting section)
+- single-user-ai-idp.md Part 7 (detailed troubleshooting)
+
+### **Print These**
+- quick-reference-card.md (keep on desk)
+- Model Selection Flowchart (from quick-reference-card.md)
+- Daily Commands (from quick-reference-card.md)
+
+### **Automate These**
+- Copy docker-compose.yml to Git repo (version control)
+- Schedule weekly benchmarks (track performance over time)
+- Log research metrics (understand your usage patterns)
+
+### **Measure These**
+- TTFT (target: <30ms)
+- Throughput (target: >120 tok/s)
+- Daily overhead (target: <10 min)
+- Productivity gain (target: 30+ min/day)
+
+---
+
+## 🆘 If You're Stuck
+
+| **Problem** | **Solution** |
+|---|---|
+| Don't know where to start | Read: implementation-summary.md (20 min) then follow Days 1-3 |
+| Don't understand architecture | Read: single-user-ai-idp.md Parts 1-3 (30 min) |
+| Deployment failing | See: docker-config-reference.md (Troubleshooting) |
+| Performance below targets | See: single-user-ai-idp.md Part 7 (Troubleshooting) |
+| Confused about model selection | See: quick-reference-card.md (Model Selection Flowchart) |
+| Don't know what to optimize | See: single-user-metrics.md (Success Metrics) |
+| Thinking about expanding to team | See: single-user-ai-idp.md Part 9 (Future Evolution) |
+
+---
+
+## 📈 Expected Outcomes
+
+### **After Setup (Day 3)**
+- ✓ System fully functional
+- ✓ Research scripts working
+- ✓ Performance baseline established
+- ✓ 2-3 hours deep understanding of AI infrastructure
+
+### **After Month 1**
+- ✓ 30-40 min daily productivity gain
+- ✓ 2-3 hours weekly time savings
+- ✓ 10-12 hours monthly extra research time
+- ✓ Model selection rules internalized
+- ✓ Custom workflow templates built
+
+### **After Month 3**
+- ✓ Domain-specific model knowledge developed
+- ✓ Fine-tuning decisions made (if needed)
+- ✓ Custom RAG system operational (if needed)
+- ✓ 18-24 hours monthly productivity recovered
+- ✓ Infrastructure maintenance near-zero
+
+---
+
+## 🎓 Learning Outcomes
+
+After completing this deployment, you'll understand:
+
+1. **GPU vs. CPU Inference Tradeoffs** (speed vs. quality)
+2. **Model Quantization** (FP8, Q4_K_M impact on performance)
+3. **Docker Containerization** (practical single-container deployment)
+4. **GPU Memory Management** (PagedAttention, KV cache optimization)
+5. **Performance Benchmarking** (measuring TTFT, throughput)
+6. **Infrastructure-as-Code** (reproducible deployments)
+7. **Workflow Optimization** (automating research tasks)
+8. **Cost Analysis** (comparing on-prem vs. cloud)
+
+---
+
+## 📞 Support & Questions
+
+**Before asking for help**:
+1. Check: quick-reference-card.md (Troubleshooting section)
+2. Read: docker-config-reference.md (Tuning Guide)
+3. Search: single-user-ai-idp.md Part 7 (detailed troubleshooting)
+4. Verify: All success metrics in implementation-summary.md
+
+**Common issues have answers in the docs. Search first!**
+
+---
+
+## ✅ Final Checklist Before Starting
+
+- [ ] Read this index (understanding documentation structure)
+- [ ] Bookmarked quick-reference-card.md for daily use
+- [ ] Understand the "why" (read implementation-summary.md)
+- [ ] Ready to deploy (Day 1-3 timeline acceptable)
+- [ ] Have 2-3 days of uninterrupted time
+- [ ] Hardware meets requirements (RTX 5070 Ti, Ryzen 9900X, 64GB RAM)
+- [ ] NVIDIA drivers installed (nvidia-smi works)
+- [ ] Docker/docker-compose installed
+- [ ] Models partially downloaded or bandwidth for download available
+- [ ] Ready to go?
+
+```bash
+# If ready, start here:
+cd ~/ai-idp
+# Then follow: single-user-ai-idp.md Part 5, Day 1
+```
+
+---
+
+## 📚 Complete Reading Order (Recommended)
+
+1. **This index** (5 min) ← You are here
+2. **quick-reference-card.md** (5 min) - Bookmark it
+3. **implementation-summary.md** (20 min) - Understand the vision
+4. **single-user-ai-idp.md Parts 1-3** (30 min) - Architecture deep dive
+5. **single-user-ai-idp.md Part 5** (follow, 2-3 days) - Actual deployment
+6. **single-user-metrics.md** (40 min) - Validation and metrics
+7. **docker-config-reference.md** (reference, as-needed) - Troubleshooting
+
+**Total reading time**: ~2 hours spread over 2-3 days
+**Total deployment time**: 2-3 days active work
+**Total setup investment**: 3-4 days to fully operational system
+
+---
+
+## 🎯 Your Next Action
+
+**Right Now (Next 5 minutes)**:
+1. Bookmark quick-reference-card.md
+2. Read the "Document Roadmap" section above (you're in it)
+3. Choose your path: Path 1 (Fast), Path 2 (Balanced), or Path 3 (Thorough)
+
+**Next 30 minutes**:
+1. Read your chosen "introduction" document (quick-reference-card.md OR implementation-summary.md)
+2. Verify hardware requirements are met
+3. Plan your 2-3 day deployment schedule
+
+**Today or Tomorrow**:
+1. Begin Day 1 of deployment (single-user-ai-idp.md Part 5)
+2. You'll be live within 2-3 days
+
+---
+
+**Welcome to your personal AI infrastructure.**
+
+**Questions about the docs themselves?** This index answers them.
+**Questions about deployment?** See single-user-ai-idp.md Part 5.
+**Questions about performance?** See single-user-metrics.md.
+**Questions about configuration?** See docker-config-reference.md.
+
+**Everything you need to succeed is in these 6 documents. You're ready to start.**
+
+---
+
+**Setup Time**: 2-3 days | **Cost**: $25-35/month | **Daily Gain**: 30-40 min | **Monthly Gain**: 10-12 hours
+
+**Start here**: Read quick-reference-card.md (5 min) → Read implementation-summary.md (20 min) → Deploy (2-3 days)
