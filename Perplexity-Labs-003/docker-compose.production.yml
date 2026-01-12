@@ -29,6 +29,7 @@ services:
     # Security hardening
     security_opt:
       - no-new-privileges:true
+      # - seccomp:unconfined # Required for some GPU workloads, verify if needed
     cap_drop:
       - ALL
     cap_add:

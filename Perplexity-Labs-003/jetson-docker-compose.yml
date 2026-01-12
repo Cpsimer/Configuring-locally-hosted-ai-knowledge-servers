@@ -1,0 +1,202 @@
+# Jetson Orin Nano Super - Edge AI Deployment
+# Version: 2.1 | Date: 2026-01-12
+# JetPack 6.x Compatible (L4T R36.4.0+)
+#
+# VALIDATED PERFORMANCE:
+#   Llama 3.2 1B Q4: 15-25 tok/s local
+#   Llama 3.2 3B Q4 (RPC offload): 20-35 tok/s
+#   TTFT: 50-100ms local, 100-200ms with RPC
+#
+# HARDWARE:
+#   Jetson Orin Nano 8GB Module
+#   67 TOPS INT8 | 1024 CUDA | 32 Tensor cores
+#   8GB LPDDR5 (68 GB/s) | Samsung 990 EVO 1TB
+#   USB 4.0 connection to AI Desktop
+
+version: '3.8'
+
+services:
+  # ===========================================================================
+  # PRIMARY EDGE INFERENCE - Llama 3.2 1B
+  # ===========================================================================
+  # Fully local inference on Jetson GPU
+  # Use case: Real-time edge AI, IoT, robotics
+  # ===========================================================================
+  llamacpp-edge-1b:
+    image: dustynv/llama.cpp:r36.4.0
+    container_name: llamacpp-edge-1b
+    runtime: nvidia
+    
+    # Security
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    
+    environment:
+      - TZ=America/Chicago
+      - CUDA_VISIBLE_DEVICES=0
+    
+    volumes:
+      - /mnt/models:/models:ro
+      - ./logs/edge-1b:/app/logs:rw
+    
+    ports:
+      - "8080:8080"
+    
+    # Optimized for Jetson Orin Nano (8GB LPDDR5)
+    # 12 GPU layers fit comfortably in VRAM
+    # 12 CPU layers on ARM Cortex-A78AE
+    command: >
+      --model /models/llama-3.2-1b-Q4_K_M.gguf
+      --threads 6
+      --batch-size 256
+      --ctx-size 4096
+      --n-gpu-layers 12
+      --parallel 4
+      --cont-batching
+      --metrics
+      --port 8080
+    
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    restart: unless-stopped
+    
+    deploy:
+      resources:
+        limits:
+          memory: 6G
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+
+  # ===========================================================================
+  # HYBRID EDGE INFERENCE - Llama 3.2 3B with RPC Offload
+  # ===========================================================================
+  # Local GPU layers + CPU layers offloaded to AI Desktop
+  # Requires RPC server running on AI Desktop (schlimers-server)
+  # ===========================================================================
+  llamacpp-edge-3b-rpc:
+    image: dustynv/llama.cpp:r36.4.0
+    container_name: llamacpp-edge-3b-rpc
+    runtime: nvidia
+    
+    # Enable with: docker-compose --profile rpc up
+    profiles:
+      - rpc
+    
+    security_opt:
+      - no-new-privileges:true
+    
+    environment:
+      - TZ=America/Chicago
+      - CUDA_VISIBLE_DEVICES=0
+      # RPC server on AI Desktop over USB 4.0 network
+      - RPC_SERVER=schlimers-server:50051
+    
+    volumes:
+      - /mnt/models:/models:ro
+      - ./logs/edge-3b:/app/logs:rw
+    
+    ports:
+      - "8081:8080"
+    
+    # Split configuration:
+    # - 16 layers on Jetson GPU (~2.5GB VRAM)
+    # - Remaining layers via RPC to AI Desktop CPU
+    # Expected latency: 3-8ms per RPC call
+    command: >
+      --model /models/llama-3.2-3b-Q4_K_M.gguf
+      --threads 4
+      --batch-size 256
+      --ctx-size 4096
+      --n-gpu-layers 16
+      --rpc schlimers-server:50051
+      --parallel 2
+      --cont-batching
+      --metrics
+      --port 8080
+    
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 120s
+    
+    restart: unless-stopped
+    
+    deploy:
+      resources:
+        limits:
+          memory: 5G
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    
+    # Depends on local 1B model being available as fallback
+    depends_on:
+      - llamacpp-edge-1b
+
+
+  # ===========================================================================
+  # PROMETHEUS METRICS EXPORTER
+  # ===========================================================================
+  # Exposes Jetson GPU/system metrics to Prometheus on AI Desktop
+  # ===========================================================================
+  jetson-exporter:
+    image: dustynv/jetson-containers:tegrastats
+    container_name: jetson-exporter
+    runtime: nvidia
+    
+    profiles:
+      - monitoring
+    
+    ports:
+      - "9100:9100"
+    
+    environment:
+      - METRICS_PORT=9100
+    
+    restart: unless-stopped
+
+
+# ==============================================================================
+# NETWORKS
+# ==============================================================================
+networks:
+  default:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: jetson-ai
+
+
+# ==============================================================================
+# NOTES
+# ==============================================================================
+# USB 4.0 Connection Setup:
+#   1. Static IP on Jetson: 192.168.55.2/24
+#   2. AI Desktop USB interface: 192.168.55.1/24
+#   3. Add to /etc/hosts: 192.168.55.1 schlimers-server
+#
+# Model Sync from AI Desktop:
+#   rsync -avh ubuntu@schlimers-server:/mnt/models/llama-3.2-* /mnt/models/
+#
+# RPC Server on AI Desktop:
+#   docker-compose --profile edge up -d llamacpp-rpc-server

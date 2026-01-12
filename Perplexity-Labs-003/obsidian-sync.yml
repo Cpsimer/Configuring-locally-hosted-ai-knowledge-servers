@@ -1,0 +1,42 @@
+# ~/ai-idp/obsidian-sync.yml
+# Obsidian Sync Configuration Template
+# Sync AI IDP docs and configs across devices using Obsidian Sync service
+# Included: Documentation logs, benchmarks, and non-secret configs
+
+sync_configuration:
+  vault_name: "AI-IDP-Knowledge-Base"
+  
+  # Paths to sync
+  include:
+    - "docs/**/*.md"
+    - "benchmarks/reports/*.html"
+    - "docker-compose*.yml"
+    - "scripts/*.sh"
+    - "jetson-docker-compose.yml"
+    - "SYSTEM-FINALIZATION-v2-PRODUCTION.md"
+    - "USER-PROGRAMS-INTEGRATION.md"
+    
+  # Paths to ignore (Security)
+  exclude:
+    - "secrets/*"
+    - "**/*.env"
+    - "**/*.key"
+    - "logs/*"
+    - ".git/*"
+    
+  # Device Roles
+  devices:
+    - id: "desktop-main-01"
+      name: "AI Desktop (schlimers-srv)"
+      mode: "bidirectional"
+    
+    - id: "laptop-dev-01"
+      name: "XPS 15 (Dev)"
+      mode: "pull-only"
+    
+    - id: "jetson-edge-01"
+      name: "Jetson Orin Nano"
+      mode: "pull-only"
+
+# Usage with Obsidian CLI (hypothetical integration)
+# obsidian-sync push --config obsidian-sync.yml
